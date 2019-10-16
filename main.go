@@ -17,7 +17,20 @@ const (
 	geoliteURL = "https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz"
 )
 
-func DownloadArchive(url string, baseDir string) (filename string, err error) {
+type record struct {
+	Country struct {
+		IsoCode string `maxminddb:"iso_code"`
+	} `maxminddb:"country"`
+	RegisteredCountry struct {
+		IsoCode string `maxminddb:"iso_code"`
+	} `maxminddb:"registered_country"`
+	Traits struct {
+		IsAnonymousProxy    bool `maxminddb:"is_anonymous_proxy"`
+		IsSatelliteProvider bool `maxminddb:"is_satellite_provider"`
+	} `maxminddb:"traits"`
+}
+
+func downloadArchive(url string, baseDir string) (filename string, err error) {
 	r, err := http.Get(url)
 	if err != nil {
 		return
@@ -37,7 +50,7 @@ func DownloadArchive(url string, baseDir string) (filename string, err error) {
 	return
 }
 
-func ExtractMaxMindDB(filePath string, baseDir string) (filename string, err error) {
+func extractMaxMindDB(filePath string, baseDir string) (filename string, err error) {
 	var mmdbFilename string
 	_ = archiver.Walk(filePath, func(f archiver.File) error {
 		if filepath.Ext(f.Name()) == ".mmdb" {
@@ -74,12 +87,12 @@ func main() {
 	}
 	defer os.RemoveAll(dir)
 	log.Printf("Created temporary directory %s", dir)
-	glTarPath, err := DownloadArchive(geoliteURL, dir)
+	glTarPath, err := downloadArchive(geoliteURL, dir)
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
 	}
-	mmdbFilename, err := ExtractMaxMindDB(glTarPath, dir)
+	mmdbFilename, err := extractMaxMindDB(glTarPath, dir)
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
@@ -90,28 +103,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	// var record interface{}
-	var record struct {
-		Country struct {
-			IsoCode string `maxminddb:"iso_code"`
-		} `maxminddb:"country"`
-		RegisteredCountry struct {
-			IsoCode string `maxminddb:"iso_code"`
-		} `maxminddb:"registered_country"`
-		Traits struct {
-			IsAnonymousProxy    bool `maxminddb:"is_anonymous_proxy"`
-			IsSatelliteProvider bool `maxminddb:"is_satellite_provider"`
-		} `maxminddb:"traits"`
-	}
+	var r record
 
 	networks := mmdb.Networks()
 	for networks.Next() {
-		subnet, err := networks.Network(&record)
+		subnet, err := networks.Network(&r)
 		if err != nil {
 			log.Fatal(err)
 			os.Exit(1)
 		}
-		log.Printf("%s: %s/%s, %t %t", subnet.String(), record.Country.IsoCode, record.RegisteredCountry.IsoCode, record.Traits.IsAnonymousProxy, record.Traits.IsSatelliteProvider)
+		log.Printf("%s: %s/%s, %t %t", subnet.String(), r.Country.IsoCode, r.RegisteredCountry.IsoCode, r.Traits.IsAnonymousProxy, r.Traits.IsSatelliteProvider)
 	}
 	if networks.Err() != nil {
 		log.Fatal(networks.Err())
