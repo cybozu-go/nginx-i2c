@@ -2,8 +2,8 @@ package main
 
 import (
 	"errors"
-	"github.com/oschwald/maxminddb-golang"
 	"github.com/mholt/archiver"
+	"github.com/oschwald/maxminddb-golang"
 	"io"
 	"io/ioutil"
 	"log"
@@ -102,7 +102,6 @@ func main() {
 			IsAnonymousProxy    bool `maxminddb:"is_anonymous_proxy"`
 			IsSatelliteProvider bool `maxminddb:"is_satellite_provider"`
 		} `maxminddb:"traits"`
-
 	}
 
 	networks := mmdb.Networks()
