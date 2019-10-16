@@ -15,6 +15,11 @@ import (
 
 const (
 	geoliteURL = "https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz"
+	afrinicURL = "https://ftp.afrinic.net/pub/stats/afrinic/delegated-afrinic-extended-latest"
+	apnicURL = "https://ftp.apnic.net/apnic/stats/apnic/delegated-apnic-latest"
+	arinURL = "https://ftp.arin.net/pub/stats/arin/delegated-arin-extended-latest"
+	lacnicURL = "https://ftp.lacnic.net/pub/stats/lacnic/delegated-lacnic-extended-latest"
+	ripeURL = "https://ftp.ripe.net/pub/stats/ripencc/delegated-ripencc-extended-latest"
 )
 
 type record struct {
