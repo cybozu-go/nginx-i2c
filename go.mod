@@ -1,4 +1,4 @@
-module ipv6country
+module github.com/Hsn723/nginx-i2c
 
 go 1.12
 
