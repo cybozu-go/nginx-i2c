@@ -12,3 +12,4 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 nginx-i2c
+ip2country.conf
