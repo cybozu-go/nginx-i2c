@@ -72,7 +72,7 @@ func extractMaxMindDB(filePath string, baseDir string) (filename string, err err
 	return
 }
 
-// GetMMDBFile extracts the mmdb file from the archived located at the givel url. The provided directory serves as a working directory and is intended to be used with a directory created using ioutil.TempDir
+// GetMMDBFile extracts the mmdb file from the archived located at the given URL. The provided directory serves as a working directory and is intended to be used with a directory created using ioutil.TempDir
 func GetMMDBFile(url string, dir string) (filename string, err error) {
 	glTarPath, err := downloadDB(url, dir)
 	if err != nil {
@@ -80,5 +80,11 @@ func GetMMDBFile(url string, dir string) (filename string, err error) {
 		return
 	}
 	filename, err = extractMaxMindDB(glTarPath, dir)
+	return
+}
+
+// GetRIRFile downloads the delegation file from the given URL and returns the filename. The provided directory serves as a working directory and is intended to be used with a directory created using ioutil.TempDir
+func GetRIRFile(url string, dir string) (filename string, err error) {
+	filename, err = downloadDB(url, dir)
 	return
 }
