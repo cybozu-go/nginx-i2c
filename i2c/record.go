@@ -48,7 +48,7 @@ func extractMaxMindDB(filePath string, baseDir string) (filename string, err err
 	_ = archiver.Walk(filePath, func(f archiver.File) error {
 		if filepath.Ext(f.Name()) == ".mmdb" {
 			mmdbFilename = path.Join(baseDir, f.Name())
-			log.Printf("Found %s", mmdbFilename)
+			log.Printf("Found %s", f.Name())
 			// Extract right away
 			out, err := os.Create(mmdbFilename)
 			if err != nil {

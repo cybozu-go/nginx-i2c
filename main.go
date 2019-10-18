@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/csv"
 	"fmt"
 	"github.com/Hsn723/nginx-i2c/i2c"
@@ -63,8 +64,11 @@ func getSortedSubnets(entries map[string]string) (subnets []string) {
 	for s := range entries {
 		subnets = append(subnets, s)
 	}
-	// TODO: better IP address sorting
-	sort.Strings(subnets)
+	sort.Slice(subnets, func(i, j int) bool {
+		ip1, _, _ := net.ParseCIDR(subnets[i])
+		ip2, _, _ := net.ParseCIDR(subnets[j])
+		return bytes.Compare(ip1, ip2) < 0
+	})
 	return
 }
 
