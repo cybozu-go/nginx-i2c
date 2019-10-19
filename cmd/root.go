@@ -61,11 +61,11 @@ func rootMain(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	if err := i2c.WriteI2C(entries, "ip2country.conf", workDir); err != nil {
+	if err := i2c.WriteI2C(entries, Outfile, workDir); err != nil {
 		log.Fatal(err)
 		os.Exit(1)
 	}
-	log.Println("Wrote .conf file")
+	log.Printf("Wrote .conf file to %s", Outfile)
 }
 
 func Execute() {

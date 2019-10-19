@@ -129,14 +129,9 @@ func GetRIRFiles(dir string) (filenames []string, err error) {
 }
 
 // WriteI2C writes the IP-to-coutnry mappings to file
-func WriteI2C(entries map[string]string, filename string, tmpDir string) (err error) {
-	tmpFilePath := path.Join(tmpDir, filename)
+func WriteI2C(entries map[string]string, outfile, tmpDir string) (err error) {
+	tmpFilePath := path.Join(tmpDir, "i2c.conf")
 
-	cwd, err := os.Getwd()
-	if err != nil {
-		return
-	}
-	outFilePath := path.Join(cwd, filename)
 	tmpFile, err := os.Create(tmpFilePath)
 	if err != nil {
 		return
@@ -149,6 +144,6 @@ func WriteI2C(entries map[string]string, filename string, tmpDir string) (err er
 			return
 		}
 	}
-	err = os.Rename(tmpFilePath, outFilePath)
+	err = os.Rename(tmpFilePath, outfile)
 	return
 }
