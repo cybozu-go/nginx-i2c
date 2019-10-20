@@ -68,6 +68,7 @@ func rootMain(cmd *cobra.Command, args []string) {
 	log.Printf("Wrote .conf file to %s", outfile)
 }
 
+// Execute runs the root command
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
