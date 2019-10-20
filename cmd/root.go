@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	IPv4Only bool
-	Outfile  string
+	ipv4Only bool
+	outfile  string
 	rootCmd  = &cobra.Command{
 		Use:   "nginx-i2c",
 		Short: "nginx-i2c generates an IP-to-country mapping file for ngx_http_geo_module",
@@ -20,8 +20,8 @@ var (
 )
 
 func init() {
-	rootCmd.PersistentFlags().BoolVarP(&IPv4Only, "ipv4-only", "4", false, "only include IPv4 ranges (experimental)")
-	rootCmd.PersistentFlags().StringVarP(&Outfile, "outfile", "o", "./ip2country.conf", "specify output file path")
+	rootCmd.PersistentFlags().BoolVarP(&ipv4Only, "ipv4-only", "4", false, "only include IPv4 ranges (experimental)")
+	rootCmd.PersistentFlags().StringVarP(&outfile, "outfile", "o", "./ip2country.conf", "specify output file path")
 	// TODO: exclude countries
 }
 
@@ -46,7 +46,7 @@ func rootMain(cmd *cobra.Command, args []string) {
 
 	entries := map[string]string{}
 
-	if err := i2c.GetMMDBSubnets(mmdb, entries, IPv4Only); err != nil {
+	if err := i2c.GetMMDBSubnets(mmdb, entries, ipv4Only); err != nil {
 		log.Fatal(err)
 		os.Exit(1)
 	}
@@ -56,16 +56,16 @@ func rootMain(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 		os.Exit(1)
 	}
-	if err := i2c.AppendAllRIRSubnets(mmdb, entries, rirFiles, IPv4Only); err != nil {
+	if err := i2c.AppendAllRIRSubnets(mmdb, entries, rirFiles, ipv4Only); err != nil {
 		log.Fatal(err)
 		os.Exit(1)
 	}
 
-	if err := i2c.WriteI2C(entries, Outfile, workDir); err != nil {
+	if err := i2c.WriteI2C(entries, outfile, workDir); err != nil {
 		log.Fatal(err)
 		os.Exit(1)
 	}
-	log.Printf("Wrote .conf file to %s", Outfile)
+	log.Printf("Wrote .conf file to %s", outfile)
 }
 
 func Execute() {

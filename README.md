@@ -1,3 +1,5 @@
+[![GoDoc](https://godoc.org/github.com/Hsn723/nginx-i2c?status.svg)](https://godoc.org/github.com/Hsn723/nginx-i2c) [![Go Report Card](https://goreportcard.com/badge/github.com/Hsn723/nginx-i2c)](https://goreportcard.com/report/github.com/Hsn723/nginx-i2c)
+
 # nginx-i2c
 nginx-i2c generates IP to country mappings for use in [ngx_http_geo_module](https://nginx.org/en/docs/http/ngx_http_geo_module.html) using the CIDR format. It supports IPv4 and IPv6 subnets, with the option to only use IPv4 subnets for IPv4-only servers. The [MaxMind GeoIP2](https://dev.maxmind.com/geoip/) database is used and complemented with data from [AFRINIC](https://ftp.afrinic.net/pub/stats/afrinic/delegated-afrinic-extended-latest), [APNIC](https://ftp.apnic.net/apnic/stats/apnic/delegated-apnic-latest), [ARIN](https://ftp.arin.net/pub/stats/arin/delegated-arin-extended-latest). [LACNIC](https://ftp.lacnic.net/pub/stats/lacnic/delegated-lacnic-extended-latest) and [RIPE](https://ftp.ripe.net/pub/stats/ripencc/delegated-ripencc-extended-latest).
 
