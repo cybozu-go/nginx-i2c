@@ -24,3 +24,7 @@ geo $country {
     # extra rules here
 }
 ```
+
+## TODO?
+- Include/exclude countries (mutually exclusive?)
+- IP range output?
