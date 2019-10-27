@@ -112,7 +112,8 @@ func appendRIRSubnets(mmdb *maxminddb.Reader, csvReader *csv.Reader, entries map
 			maskPart := ipCountToSubnetMask(uint32(count))
 			newSubnet := fmt.Sprintf("%s/%v", ip, maskPart)
 			country := line[1]
-			if country == "" {
+			// TODO: check against a list of ignored country codes
+			if country == "" || country == "ZZ" {
 				continue
 			}
 			entries[newSubnet] = country
