@@ -15,9 +15,9 @@ import (
 	"strings"
 )
 
-func ipCountToSubnetMask(count uint32) (mask int) {
+func ipCountToSubnetMask(count uint32) (mask uint32) {
 	bits := bits.Len32(count) - 1
-	mask = 32 - bits
+	mask = uint32(32 - bits)
 	return
 }
 
@@ -105,12 +105,15 @@ func appendRIRSubnets(mmdb *maxminddb.Reader, csvReader *csv.Reader, entries map
 			return err
 		}
 		if !found {
-			count, err := strconv.ParseUint(line[4], 10, 32)
+			maskPart, err := strconv.ParseUint(line[4], 10, 32)
 			if err != nil {
 				return err
 			}
-			maskPart := ipCountToSubnetMask(uint32(count))
-			newSubnet := fmt.Sprintf("%s/%v", ip, maskPart)
+			mask := uint32(maskPart)
+			if isIPv4(ip) {
+				mask = ipCountToSubnetMask(mask)
+			}
+			newSubnet := fmt.Sprintf("%s/%v", ip, mask)
 			country := line[1]
 			// TODO: check against a list of ignored country codes
 			if country == "" || country == "ZZ" {
