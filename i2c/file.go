@@ -154,7 +154,7 @@ func GetRIRFiles(dir string) (filenames []string, err error) {
 	return
 }
 
-func MoveFile(srcPath, destPath string) (err error) {
+func moveFile(srcPath, destPath string) (err error) {
 	inFile, err := os.Open(srcPath)
 	if err != nil {
 		return
@@ -189,6 +189,6 @@ func WriteI2C(entries map[string]string, outfile, tmpDir string) (err error) {
 			return
 		}
 	}
-	err = MoveFile(tmpFilePath, outfile)
+	err = moveFile(tmpFilePath, outfile)
 	return
 }
