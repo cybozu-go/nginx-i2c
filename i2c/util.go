@@ -50,7 +50,7 @@ func isIgnoredCountry(country string, includeCountries, excludeCountries map[str
 	if containsCountry(excludeCountries, country) {
 		return true
 	}
-	return !containsCountry(includeCountries, country)
+	return len(includeCountries) > 0 && !containsCountry(includeCountries, country)
 }
 
 func isIgnoredLine(line []string, isIPv4Only bool, includeCountries, excludeCountries map[string]struct{}) bool {
