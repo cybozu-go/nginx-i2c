@@ -12,7 +12,7 @@ Usage:
 
 Flags:
   -h, --help             help for nginx-i2c
-  -4, --ipv4-only        only include IPv4 ranges (experimental)
+  -4, --ipv4-only        only include IPv4 ranges
   -o, --outfile string   specify output file path (default "./ip2country.conf")
 ```
 
@@ -25,6 +25,6 @@ geo $country {
 }
 ```
 
-## TODO?
-- Include/exclude countries (mutually exclusive?)
+## Under consideration
+- Include/exclude countries (mutually exclusive)
 - IP range output?

@@ -15,9 +15,19 @@ import (
 	"strings"
 )
 
+var defaultIgnoredCountries = map[string]struct{}{
+	"":   {},
+	"ZZ": {},
+}
+
 func ipCountToSubnetMask(count uint32) (mask uint32) {
 	bits := bits.Len32(count) - 1
 	mask = uint32(32 - bits)
+	return
+}
+
+func containsCountry(ignores map[string]struct{}, country string) (ignored bool) {
+	_, ignored = ignores[country]
 	return
 }
 
@@ -34,8 +44,7 @@ func isIgnoredLine(line []string, isIPv4Only bool) bool {
 	if line[2] == "asn" {
 		return true
 	}
-	// TODO: filter out countries in ignore list
-	return false
+	return containsCountry(defaultIgnoredCountries, line[1])
 }
 
 // exclude IPv4 mapped IPv6 addresses
@@ -62,7 +71,7 @@ func GetMMDBSubnets(mmdb *maxminddb.Reader, entries map[string]string, isIPv4Onl
 		if country == "" {
 			country = r.RegisteredCountry.IsoCode
 		}
-		if country == "" {
+		if containsCountry(defaultIgnoredCountries, country) {
 			continue
 		}
 		entries[subnet.String()] = country
@@ -115,14 +124,9 @@ func appendRIRSubnets(mmdb *maxminddb.Reader, csvReader *csv.Reader, entries map
 			}
 			newSubnet := fmt.Sprintf("%s/%v", ip, mask)
 			country := line[1]
-			// TODO: check against a list of ignored country codes
-			if country == "" || country == "ZZ" {
-				continue
-			}
 			entries[newSubnet] = country
 			continue
 		}
-		// TODO, handle if found and not matching?
 	}
 	return nil
 }
