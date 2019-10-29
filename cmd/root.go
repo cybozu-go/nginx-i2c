@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"github.com/Hsn723/nginx-i2c/i2c"
 	"github.com/spf13/cobra"
 	"io/ioutil"
@@ -9,11 +10,14 @@ import (
 )
 
 var (
-	ipv4Only bool
-	outfile  string
-	rootCmd  = &cobra.Command{
+	ipv4Only         bool
+	outfile          string
+	includeCountries []string
+	excludeCountries []string
+	rootCmd          = &cobra.Command{
 		Use:   "nginx-i2c",
 		Short: "nginx-i2c generates an IP-to-country mapping file for ngx_http_geo_module",
+		Args:  validateArgs,
 		Run:   rootMain,
 	}
 )
@@ -21,7 +25,33 @@ var (
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&ipv4Only, "ipv4-only", "4", false, "only include IPv4 ranges")
 	rootCmd.PersistentFlags().StringVarP(&outfile, "outfile", "o", "./ip2country.conf", "specify output file path")
-	// TODO: exclude countries
+	rootCmd.PersistentFlags().StringSliceVarP(&includeCountries, "include", "i", []string{}, "countries whose subnets to include, cannot be used with --exclude")
+	rootCmd.PersistentFlags().StringSliceVarP(&excludeCountries, "exclude", "e", []string{}, "countries whose subnets to exclude, cannot be used with --include")
+}
+
+func validateCountries() error {
+	if len(includeCountries) > 0 && len(excludeCountries) > 0 {
+		return errors.New("--include cannot be used alongside --exclude")
+	}
+	if len(includeCountries) > 0 {
+		for _, c := range includeCountries {
+			if len(c) != 2 {
+				return errors.New("only two letter country codes are accepted")
+			}
+		}
+	}
+	if len(excludeCountries) > 0 {
+		for _, c := range excludeCountries {
+			if len(c) != 2 {
+				return errors.New("only two letter country codes are accepted")
+			}
+		}
+	}
+	return nil
+}
+
+func validateArgs(cmd *cobra.Command, args []string) error {
+	return validateCountries()
 }
 
 func rootMain(cmd *cobra.Command, args []string) {
@@ -42,8 +72,10 @@ func rootMain(cmd *cobra.Command, args []string) {
 	defer mmdb.Close()
 
 	entries := map[string]string{}
+	includes := i2c.CountrySliceToMap(includeCountries)
+	excludes := i2c.CountrySliceToMap(excludeCountries)
 
-	if err := i2c.GetMMDBSubnets(mmdb, entries, ipv4Only); err != nil {
+	if err := i2c.GetMMDBSubnets(mmdb, entries, ipv4Only, includes, excludes); err != nil {
 		log.Fatal(err)
 	}
 
@@ -51,7 +83,7 @@ func rootMain(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err := i2c.AppendAllRIRSubnets(mmdb, entries, rirFiles, ipv4Only); err != nil {
+	if err := i2c.AppendAllRIRSubnets(mmdb, entries, rirFiles, ipv4Only, includes, excludes); err != nil {
 		log.Fatal(err)
 	}
 

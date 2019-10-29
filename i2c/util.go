@@ -20,18 +20,40 @@ var defaultIgnoredCountries = map[string]struct{}{
 	"ZZ": {},
 }
 
+// CountrySliceToMap converts a slice to a map for faster lookups
+func CountrySliceToMap(cc []string) (countries map[string]struct{}) {
+	countries = make(map[string]struct{})
+	for _, c := range cc {
+		c = strings.ToUpper(c)
+		if _, ok := countries[c]; !ok {
+			countries[c] = struct{}{}
+		}
+	}
+	return
+}
+
 func ipCountToSubnetMask(count uint32) (mask uint32) {
 	bits := bits.Len32(count) - 1
 	mask = uint32(32 - bits)
 	return
 }
 
-func containsCountry(ignores map[string]struct{}, country string) (ignored bool) {
-	_, ignored = ignores[country]
+func containsCountry(countries map[string]struct{}, country string) (contained bool) {
+	_, contained = countries[country]
 	return
 }
 
-func isIgnoredLine(line []string, isIPv4Only bool) bool {
+func isIgnoredCountry(country string, includeCountries, excludeCountries map[string]struct{}) bool {
+	if containsCountry(defaultIgnoredCountries, country) {
+		return true
+	}
+	if containsCountry(excludeCountries, country) {
+		return true
+	}
+	return !containsCountry(includeCountries, country)
+}
+
+func isIgnoredLine(line []string, isIPv4Only bool, includeCountries, excludeCountries map[string]struct{}) bool {
 	if _, err := strconv.ParseFloat(line[0], 64); err == nil {
 		return true
 	}
@@ -44,7 +66,7 @@ func isIgnoredLine(line []string, isIPv4Only bool) bool {
 	if line[2] == "asn" {
 		return true
 	}
-	return containsCountry(defaultIgnoredCountries, line[1])
+	return isIgnoredCountry(line[1], includeCountries, excludeCountries)
 }
 
 // exclude IPv4 mapped IPv6 addresses
@@ -53,7 +75,7 @@ func isIPv4(ip net.IP) bool {
 }
 
 // GetMMDBSubnets extracts subnets from the given MaxMind database
-func GetMMDBSubnets(mmdb *maxminddb.Reader, entries map[string]string, isIPv4Only bool) error {
+func GetMMDBSubnets(mmdb *maxminddb.Reader, entries map[string]string, isIPv4Only bool, includeCountries, excludeCountries map[string]struct{}) error {
 	networks := mmdb.Networks()
 	var r Record
 	for networks.Next() {
@@ -71,7 +93,7 @@ func GetMMDBSubnets(mmdb *maxminddb.Reader, entries map[string]string, isIPv4Onl
 		if country == "" {
 			country = r.RegisteredCountry.IsoCode
 		}
-		if containsCountry(defaultIgnoredCountries, country) {
+		if isIgnoredCountry(country, includeCountries, excludeCountries) {
 			continue
 		}
 		entries[subnet.String()] = country
@@ -95,7 +117,7 @@ func getSortedSubnets(entries map[string]string) (subnets []string) {
 	return
 }
 
-func appendRIRSubnets(mmdb *maxminddb.Reader, csvReader *csv.Reader, entries map[string]string, isIPv4Only bool) error {
+func appendRIRSubnets(mmdb *maxminddb.Reader, csvReader *csv.Reader, entries map[string]string, isIPv4Only bool, includeCountries, excludeCountries map[string]struct{}) error {
 	for {
 		line, err := csvReader.Read()
 		if err == io.EOF {
@@ -104,7 +126,7 @@ func appendRIRSubnets(mmdb *maxminddb.Reader, csvReader *csv.Reader, entries map
 		if err != nil {
 			return err
 		}
-		if isIgnoredLine(line, isIPv4Only) {
+		if isIgnoredLine(line, isIPv4Only, includeCountries, excludeCountries) {
 			continue
 		}
 		ip := net.ParseIP(line[3])
@@ -132,7 +154,7 @@ func appendRIRSubnets(mmdb *maxminddb.Reader, csvReader *csv.Reader, entries map
 }
 
 // AppendAllRIRSubnets uses RIR entries to add missing records to the MaxMind database
-func AppendAllRIRSubnets(mmdb *maxminddb.Reader, entries map[string]string, rirFiles []string, isIPv4Only bool) error {
+func AppendAllRIRSubnets(mmdb *maxminddb.Reader, entries map[string]string, rirFiles []string, isIPv4Only bool, includeCountries, excludeCountries map[string]struct{}) error {
 	for _, rirFile := range rirFiles {
 		csvFile, e := os.Open(rirFile)
 		if e != nil {
@@ -144,7 +166,7 @@ func AppendAllRIRSubnets(mmdb *maxminddb.Reader, entries map[string]string, rirF
 		reader.Comment = '#'
 		// some delegated dbs are not uniform
 		reader.FieldsPerRecord = -1
-		if e := appendRIRSubnets(mmdb, reader, entries, isIPv4Only); e != nil {
+		if e := appendRIRSubnets(mmdb, reader, entries, isIPv4Only, includeCountries, excludeCountries); e != nil {
 			return e
 		}
 	}

@@ -13,9 +13,11 @@ Usage:
   nginx-i2c [flags]
 
 Flags:
-  -h, --help             help for nginx-i2c
-  -4, --ipv4-only        only include IPv4 ranges
-  -o, --outfile string   specify output file path (default "./ip2country.conf")
+  -e, --exclude strings   countries whose subnets to exclude, cannot be used with --include
+  -h, --help              help for nginx-i2c
+  -i, --include strings   countries whose subnets to include, cannot be used with --exclude
+  -4, --ipv4-only         only include IPv4 ranges
+  -o, --outfile string    specify output file path (default "./ip2country.conf")
 ```
 
 Use with ngx_http_geo_module. No `default` country is specified. Choose your own default country by adding the relevant setting before including `ip2country.conf`.
@@ -28,5 +30,4 @@ geo $country {
 ```
 
 ## Under consideration
-- Include/exclude countries (mutually exclusive)
-- IP range output?
+- IP range output
