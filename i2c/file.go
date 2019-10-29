@@ -1,9 +1,10 @@
 package i2c
 
 import (
+	"archive/tar"
+	"compress/gzip"
 	"errors"
 	"fmt"
-	"github.com/mholt/archiver"
 	"io"
 	"log"
 	"net/http"
@@ -61,30 +62,55 @@ func downloadDB(url string, baseDir string) (filename string, err error) {
 
 func extractMaxMindDB(filePath string, baseDir string) (filename string, err error) {
 	var mmdbFilename string
-	_ = archiver.Walk(filePath, func(f archiver.File) error {
-		if filepath.Ext(f.Name()) == ".mmdb" {
-			mmdbFilename = path.Join(baseDir, f.Name())
-			log.Printf("Found %s", f.Name())
-			// Extract right away
-			out, err := os.Create(mmdbFilename)
-			if err != nil {
-				return err
-			}
-			defer out.Close()
-			_, err = io.Copy(out, f.ReadCloser)
-			if err != nil {
-				return err
-			}
-			return archiver.ErrStopWalk
-		}
-		return nil
-	})
-	if mmdbFilename == "" {
-		err = errors.New("Could not find .mmdb file in archive")
+	tgz, err := os.Open(filePath)
+	if err != nil {
 		return
 	}
-	filename = mmdbFilename
-	log.Printf("Extracted %s", mmdbFilename)
+	defer tgz.Close()
+	gz, err := gzip.NewReader(tgz)
+	if err != nil {
+		return
+	}
+	defer gz.Close()
+	tr := tar.NewReader(gz)
+	for {
+		header, e := tr.Next()
+		if err == io.EOF {
+			break
+		}
+		if e != nil {
+			err = e
+			return
+		}
+		f := path.Base(header.Name)
+		fInfo := header.FileInfo()
+		if !fInfo.Mode().IsRegular() || filepath.Ext(f) != ".mmdb" {
+			continue
+		}
+		mmdbFilename = path.Join(baseDir, f)
+		log.Printf("Found %s", f)
+		out, e := os.Create(mmdbFilename)
+		if e != nil {
+			err = e
+			return
+		}
+		defer out.Close()
+		n, e := io.Copy(out, tr)
+		if e != nil {
+			err = e
+			return
+		}
+		if n != fInfo.Size() {
+			err = errors.New(fmt.Sprintf("File size is %d but wrote %d", fInfo.Size(), n))
+			return
+		}
+		log.Printf("Extracted %s", mmdbFilename)
+		filename = mmdbFilename
+		return
+	}
+	if mmdbFilename == "" {
+		err = errors.New("Could not find .mmdb file in archive")
+	}
 	return
 }
 
