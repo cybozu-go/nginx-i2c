@@ -1,0 +1,41 @@
+version: 2
+
+jobs:
+  build:
+    docker:
+      - image: quay.io/cybozu/golang:1.13-bionic
+    steps:
+      - checkout
+      - run: go build .
+      - run:
+          name: Verify output
+          command: |
+            ./nginx-i2c -o ./t/ip2country.conf
+            test $(wc -l <./t/ip2country.conf) -ge 10000
+      - persist_to_workspace:
+          root: ./t
+          paths:
+            - ip2country.conf
+  test-nginx:
+    docker:
+      - image: nginx:latest
+    steps:
+      - checkout
+      - run:
+          name: Install CA
+          command: apt update && apt install -y --no-install-suggests ca-certificates
+      - attach_workspace:
+          at: ./t
+      - run:
+          name: Ensure nginx can read generated file
+          command: |
+            nginx -c $(pwd)/t/nginx.conf -t
+
+workflows:
+  version: 2
+  built-and-test:
+    jobs:
+      - build
+      - test-nginx:
+          requires:
+            - build
