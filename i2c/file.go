@@ -101,7 +101,7 @@ func extractMaxMindDB(filePath string, baseDir string) (filename string, err err
 			return
 		}
 		if n != fInfo.Size() {
-			err = errors.New(fmt.Sprintf("File size is %d but wrote %d", fInfo.Size(), n))
+			err = fmt.Errorf("File size is %d but wrote %d", fInfo.Size(), n)
 			return
 		}
 		log.Printf("Extracted %s", mmdbFilename)
