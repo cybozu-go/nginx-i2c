@@ -17,6 +17,7 @@ Flags:
   -h, --help              help for nginx-i2c
   -i, --include strings   countries whose subnets to include, cannot be used with --exclude
   -4, --ipv4-only         only include IPv4 ranges
+  -l, --lower             output country codes in lowercase
   -o, --outfile string    specify output file path (default "./ip2country.conf")
 ```
 

@@ -39,6 +39,7 @@ func ipCountToSubnetMask(count uint32) (mask uint32) {
 }
 
 func containsCountry(countries map[string]struct{}, country string) (contained bool) {
+	country = strings.ToUpper(country)
 	_, contained = countries[country]
 	return
 }
@@ -75,7 +76,7 @@ func isIPv4(ip net.IP) bool {
 }
 
 // GetMMDBSubnets extracts subnets from the given MaxMind database
-func GetMMDBSubnets(mmdb *maxminddb.Reader, entries map[string]string, isIPv4Only bool, includeCountries, excludeCountries map[string]struct{}) error {
+func GetMMDBSubnets(mmdb *maxminddb.Reader, entries map[string]string, isIPv4Only, lowercase bool, includeCountries, excludeCountries map[string]struct{}) error {
 	networks := mmdb.Networks()
 	var r Record
 	for networks.Next() {
@@ -95,6 +96,9 @@ func GetMMDBSubnets(mmdb *maxminddb.Reader, entries map[string]string, isIPv4Onl
 		}
 		if isIgnoredCountry(country, includeCountries, excludeCountries) {
 			continue
+		}
+		if lowercase {
+			country = strings.ToLower(country)
 		}
 		entries[subnet.String()] = country
 	}
@@ -117,7 +121,7 @@ func getSortedSubnets(entries map[string]string) (subnets []string) {
 	return
 }
 
-func appendRIRSubnets(mmdb *maxminddb.Reader, csvReader *csv.Reader, entries map[string]string, isIPv4Only bool, includeCountries, excludeCountries map[string]struct{}) error {
+func appendRIRSubnets(mmdb *maxminddb.Reader, csvReader *csv.Reader, entries map[string]string, isIPv4Only, lowercase bool, includeCountries, excludeCountries map[string]struct{}) error {
 	for {
 		line, err := csvReader.Read()
 		if err == io.EOF {
@@ -146,6 +150,9 @@ func appendRIRSubnets(mmdb *maxminddb.Reader, csvReader *csv.Reader, entries map
 			}
 			newSubnet := fmt.Sprintf("%s/%v", ip, mask)
 			country := line[1]
+			if lowercase {
+				country = strings.ToLower(country)
+			}
 			entries[newSubnet] = country
 			continue
 		}
@@ -154,7 +161,7 @@ func appendRIRSubnets(mmdb *maxminddb.Reader, csvReader *csv.Reader, entries map
 }
 
 // AppendAllRIRSubnets uses RIR entries to add missing records to the MaxMind database
-func AppendAllRIRSubnets(mmdb *maxminddb.Reader, entries map[string]string, rirFiles []string, isIPv4Only bool, includeCountries, excludeCountries map[string]struct{}) error {
+func AppendAllRIRSubnets(mmdb *maxminddb.Reader, entries map[string]string, rirFiles []string, isIPv4Only, lowercase bool, includeCountries, excludeCountries map[string]struct{}) error {
 	for _, rirFile := range rirFiles {
 		csvFile, e := os.Open(rirFile)
 		if e != nil {
@@ -166,7 +173,7 @@ func AppendAllRIRSubnets(mmdb *maxminddb.Reader, entries map[string]string, rirF
 		reader.Comment = '#'
 		// some delegated dbs are not uniform
 		reader.FieldsPerRecord = -1
-		if e := appendRIRSubnets(mmdb, reader, entries, isIPv4Only, includeCountries, excludeCountries); e != nil {
+		if e := appendRIRSubnets(mmdb, reader, entries, isIPv4Only, lowercase, includeCountries, excludeCountries); e != nil {
 			return e
 		}
 	}

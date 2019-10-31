@@ -10,6 +10,7 @@ import (
 )
 
 var (
+	lowercase        bool
 	ipv4Only         bool
 	outfile          string
 	includeCountries []string
@@ -23,6 +24,7 @@ var (
 )
 
 func init() {
+	rootCmd.PersistentFlags().BoolVarP(&lowercase, "lower", "l", false, "output country codes in lowercase")
 	rootCmd.PersistentFlags().BoolVarP(&ipv4Only, "ipv4-only", "4", false, "only include IPv4 ranges")
 	rootCmd.PersistentFlags().StringVarP(&outfile, "outfile", "o", "./ip2country.conf", "specify output file path")
 	rootCmd.PersistentFlags().StringSliceVarP(&includeCountries, "include", "i", []string{}, "countries whose subnets to include, cannot be used with --exclude")
@@ -75,7 +77,7 @@ func rootMain(cmd *cobra.Command, args []string) {
 	includes := i2c.CountrySliceToMap(includeCountries)
 	excludes := i2c.CountrySliceToMap(excludeCountries)
 
-	if err := i2c.GetMMDBSubnets(mmdb, entries, ipv4Only, includes, excludes); err != nil {
+	if err := i2c.GetMMDBSubnets(mmdb, entries, ipv4Only, lowercase, includes, excludes); err != nil {
 		log.Fatal(err)
 	}
 
@@ -83,7 +85,7 @@ func rootMain(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err := i2c.AppendAllRIRSubnets(mmdb, entries, rirFiles, ipv4Only, includes, excludes); err != nil {
+	if err := i2c.AppendAllRIRSubnets(mmdb, entries, rirFiles, ipv4Only, lowercase, includes, excludes); err != nil {
 		log.Fatal(err)
 	}
 
