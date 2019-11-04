@@ -6,11 +6,11 @@ jobs:
       - image: quay.io/cybozu/golang:1.13-bionic
     steps:
       - checkout
-      - run: go build .
+      - run: make build
       - run:
           name: Verify output
           command: |
-            ./nginx-i2c -o ./t/ip2country.conf
+            ./work/nginx-i2c -o ./t/ip2country.conf
             test $(wc -l <./t/ip2country.conf) -ge 10000
       - persist_to_workspace:
           root: ./t

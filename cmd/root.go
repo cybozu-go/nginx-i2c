@@ -29,6 +29,8 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&outfile, "outfile", "o", "./ip2country.conf", "specify output file path")
 	rootCmd.PersistentFlags().StringSliceVarP(&includeCountries, "include", "i", []string{}, "countries whose subnets to include, cannot be used with --exclude")
 	rootCmd.PersistentFlags().StringSliceVarP(&excludeCountries, "exclude", "e", []string{}, "countries whose subnets to exclude, cannot be used with --include")
+
+	rootCmd.AddCommand(versionCmd)
 }
 
 func validateCountries() error {
