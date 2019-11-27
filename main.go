@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/Hsn723/nginx-i2c/cmd"
+	"github.com/cybozu-go/nginx-i2c/cmd"
 )
 
 func main() {

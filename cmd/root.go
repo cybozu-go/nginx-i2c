@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"errors"
-	"github.com/Hsn723/nginx-i2c/i2c"
+	"github.com/cybozu-go/nginx-i2c/i2c"
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"log"

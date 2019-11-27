@@ -1,4 +1,4 @@
-module github.com/Hsn723/nginx-i2c
+module github.com/cybozu-go/nginx-i2c
 
 go 1.12
 
