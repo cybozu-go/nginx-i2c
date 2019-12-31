@@ -13,3 +13,4 @@
 *.out
 nginx-i2c
 *.conf
+work/
