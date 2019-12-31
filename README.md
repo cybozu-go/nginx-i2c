@@ -13,13 +13,16 @@ Usage:
   nginx-i2c [flags]
 
 Flags:
-  -e, --exclude strings   countries whose subnets to exclude, cannot be used with --include
-  -h, --help              help for nginx-i2c
-  -i, --include strings   countries whose subnets to include, cannot be used with --exclude
-  -4, --ipv4-only         only include IPv4 ranges
-  -l, --lower             output country codes in lowercase
-  -o, --outfile string    specify output file path (default "./ip2country.conf")
+  -e, --exclude strings        countries whose subnets to exclude, cannot be used with --include
+  -h, --help                   help for nginx-i2c
+  -i, --include strings        countries whose subnets to include, cannot be used with --exclude
+  -4, --ipv4-only              only include IPv4 ranges
+  -l, --lower                  output country codes in lowercase
+  -t, --maxmind-token string   token for use with MaxMind
+  -o, --outfile string         specify output file path (default "./ip2country.conf")
 ```
+
+MaxMind now requires an account to download the country database.
 
 Use with ngx_http_geo_module. No `default` country is specified. Choose your own default country by adding the relevant setting before including `ip2country.conf`.
 ```
