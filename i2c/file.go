@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	geoliteURL = "https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz"
+	geoliteURLTemplate = "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-Country&license_key=%s&suffix=tar.gz"
 )
 
 var (
@@ -115,7 +115,8 @@ func extractMaxMindDB(filePath string, baseDir string) (filename string, err err
 }
 
 // GetMMDBFile extracts the mmdb file. The provided directory serves as a working directory and is intended to be used with a directory created using ioutil.TempDir
-func GetMMDBFile(dir string) (filename string, err error) {
+func GetMMDBFile(dir, license string) (filename string, err error) {
+	geoliteURL := fmt.Sprintf(geoliteURLTemplate, license)
 	glTarPath, err := downloadDB(geoliteURL, dir)
 	if err != nil {
 		log.Fatal(err)

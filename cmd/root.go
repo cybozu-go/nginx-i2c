@@ -13,6 +13,7 @@ var (
 	lowercase        bool
 	ipv4Only         bool
 	outfile          string
+	maxMindLicense   string
 	includeCountries []string
 	excludeCountries []string
 	rootCmd          = &cobra.Command{
@@ -29,6 +30,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&outfile, "outfile", "o", "./ip2country.conf", "specify output file path")
 	rootCmd.PersistentFlags().StringSliceVarP(&includeCountries, "include", "i", []string{}, "countries whose subnets to include, cannot be used with --exclude")
 	rootCmd.PersistentFlags().StringSliceVarP(&excludeCountries, "exclude", "e", []string{}, "countries whose subnets to exclude, cannot be used with --include")
+	rootCmd.PersistentFlags().StringVarP(&maxMindLicense, "maxmind-token", "t", "", "token for use with MaxMind")
 
 	rootCmd.AddCommand(versionCmd)
 }
@@ -65,7 +67,7 @@ func rootMain(cmd *cobra.Command, args []string) {
 	}
 	defer os.RemoveAll(workDir)
 	log.Printf("Created temporary directory %s", workDir)
-	mmdbFilename, err := i2c.GetMMDBFile(workDir)
+	mmdbFilename, err := i2c.GetMMDBFile(workDir, maxMindLicense)
 	if err != nil {
 		log.Fatal(err)
 	}
