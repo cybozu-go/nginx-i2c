@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/oschwald/maxminddb-golang v1.10.0
 	github.com/spf13/cobra v1.7.0
+	go4.org/netipx v0.0.0-20230303233057-f1b76eb4bb35
 )
 
 require (

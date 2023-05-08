@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/cybozu-go/nginx-i2c/i2c"
 	"github.com/spf13/cobra"
-	"io/ioutil"
 	"log"
 	"os"
 )
@@ -61,7 +60,7 @@ func validateArgs(cmd *cobra.Command, args []string) error {
 }
 
 func rootMain(cmd *cobra.Command, args []string) {
-	workDir, err := ioutil.TempDir("", "i2c")
+	workDir, err := os.MkdirTemp("", "i2c")
 	if err != nil {
 		log.Fatal(err)
 	}
