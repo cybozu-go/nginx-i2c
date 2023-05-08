@@ -3,7 +3,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: quay.io/cybozu/golang:1.13-bionic
+      - image: quay.io/cybozu/golang:1.20-jammy
     steps:
       - checkout
       - run: make build
