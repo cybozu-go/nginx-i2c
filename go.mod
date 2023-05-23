@@ -1,10 +1,16 @@
 module github.com/cybozu-go/nginx-i2c
 
-go 1.12
+go 1.19
 
 require (
-	github.com/oschwald/maxminddb-golang v1.5.0
-	github.com/spf13/cobra v0.0.5
-	github.com/stretchr/testify v1.4.0 // indirect
-	golang.org/x/sys v0.0.0-20191010194322-b09406accb47 // indirect
+	github.com/oschwald/maxminddb-golang v1.10.0
+	github.com/spf13/cobra v1.7.0
+	go4.org/netipx v0.0.0-20230303233057-f1b76eb4bb35
+)
+
+require (
+	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/stretchr/testify v1.8.2 // indirect
+	golang.org/x/sys v0.8.0 // indirect
 )

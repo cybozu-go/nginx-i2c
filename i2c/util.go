@@ -5,14 +5,17 @@ import (
 	"bytes"
 	"encoding/csv"
 	"fmt"
-	"github.com/oschwald/maxminddb-golang"
 	"io"
-	"math/bits"
+	"math/big"
 	"net"
+	"net/netip"
 	"os"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/oschwald/maxminddb-golang"
+	"go4.org/netipx"
 )
 
 var defaultIgnoredCountries = map[string]struct{}{
@@ -29,12 +32,6 @@ func CountrySliceToMap(cc []string) (countries map[string]struct{}) {
 			countries[c] = struct{}{}
 		}
 	}
-	return
-}
-
-func ipCountToSubnetMask(count uint32) (mask uint32) {
-	bits := bits.Len32(count) - 1
-	mask = uint32(32 - bits)
 	return
 }
 
@@ -121,6 +118,25 @@ func getSortedSubnets(entries map[string]string) (subnets []string) {
 	return
 }
 
+func getSubnetsFromIPCount(startIP string, count uint32) ([]string, error) {
+	var res []string
+	start, err := netip.ParseAddr(startIP)
+	if err != nil {
+		return nil, err
+	}
+	endInt := new(big.Int).SetBytes(start.AsSlice())
+	endInt = endInt.Add(endInt, big.NewInt(int64(count) - 1))
+	end, ok := netip.AddrFromSlice(endInt.Bytes())
+	if !ok {
+		return nil, fmt.Errorf("invalid IP %s", endInt)
+	}
+	ipRange := netipx.IPRangeFrom(start, end)
+	for _, prefix := range ipRange.Prefixes() {
+		res = append(res, prefix.String())
+	}
+	return res, nil
+}
+
 func appendRIRSubnets(mmdb *maxminddb.Reader, csvReader *csv.Reader, entries map[string]string, isIPv4Only, lowercase bool, includeCountries, excludeCountries map[string]struct{}) error {
 	for {
 		line, err := csvReader.Read()
@@ -140,20 +156,27 @@ func appendRIRSubnets(mmdb *maxminddb.Reader, csvReader *csv.Reader, entries map
 			return err
 		}
 		if !found {
+			country := line[1]
+			if lowercase {
+				country = strings.ToLower(country)
+			}
 			maskPart, err := strconv.ParseUint(line[4], 10, 32)
 			if err != nil {
 				return err
 			}
 			mask := uint32(maskPart)
-			if isIPv4(ip) {
-				mask = ipCountToSubnetMask(mask)
+			if !isIPv4(ip) {
+				subnet := fmt.Sprintf("%s/%v", ip, mask)
+				entries[subnet] = country
+				continue
 			}
-			newSubnet := fmt.Sprintf("%s/%v", ip, mask)
-			country := line[1]
-			if lowercase {
-				country = strings.ToLower(country)
+			subnets, err := getSubnetsFromIPCount(line[3], mask)
+			if err != nil {
+				return err
 			}
-			entries[newSubnet] = country
+			for _, subnet := range subnets {
+				entries[subnet] = country
+			}
 			continue
 		}
 	}

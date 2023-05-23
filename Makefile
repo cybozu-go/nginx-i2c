@@ -9,8 +9,11 @@ setup:
 	mkdir -p ${WORK_DIR}
 
 lint: setup
-	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b ${WORK_DIR} v1.21.0
+	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b ${WORK_DIR} v1.52.2
 	${WORK_DIR}/golangci-lint run
+
+test:
+	go test ./...
 
 build: clean setup
 	go build ${LDFLAGS} -o ${WORK_DIR}/nginx-i2c .
