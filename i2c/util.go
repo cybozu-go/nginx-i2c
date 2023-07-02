@@ -119,7 +119,6 @@ func getSortedSubnets(entries map[string]string) (subnets []string) {
 }
 
 func getSubnetsFromIPCount(startIP string, count uint32) ([]netip.Prefix, error) {
-	var res []netip.Prefix
 	start, err := netip.ParseAddr(startIP)
 	if err != nil {
 		return nil, err
@@ -131,8 +130,7 @@ func getSubnetsFromIPCount(startIP string, count uint32) ([]netip.Prefix, error)
 		return nil, fmt.Errorf("invalid IP %s", endInt)
 	}
 	ipRange := netipx.IPRangeFrom(start, end)
-	res = append(res, ipRange.Prefixes()...)
-	return res, nil
+	return ipRange.Prefixes(), nil
 }
 
 func appendRIRSubnets(mmdb *maxminddb.Reader, csvReader *csv.Reader, entries map[string]string, isIPv4Only, lowercase bool, includeCountries, excludeCountries map[string]struct{}) error {
