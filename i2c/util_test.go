@@ -69,10 +69,14 @@ func Test_getSubnetsFromIPCount(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := getSubnetsFromIPCount(tt.args.startIP, tt.args.count)
+			raw, err := getSubnetsFromIPCount(tt.args.startIP, tt.args.count)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getSubnetsFromIPCount() error = %v, wantErr %v", err, tt.wantErr)
 				return
+			}
+			var got []string
+			for _, r := range raw {
+				got = append(got, r.String())
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("getSubnetsFromIPCount() = %v, want %v", got, tt.want)
