@@ -21,7 +21,7 @@ var (
 	// AFRINIC, APNIC, ARIN. LACNIC, RIPE
 	rirURLs = []string{
 		"https://ftp.afrinic.net/pub/stats/afrinic/delegated-afrinic-extended-latest",
-		"https://ftp.apnic.net/apnic/stats/apnic/delegated-apnic-latest",
+		"https://ftp.apnic.net/stats/apnic/delegated-apnic-latest",
 		"https://ftp.arin.net/pub/stats/arin/delegated-arin-extended-latest",
 		"https://ftp.lacnic.net/pub/stats/lacnic/delegated-lacnic-extended-latest",
 		"https://ftp.ripe.net/pub/stats/ripencc/delegated-ripencc-extended-latest",
@@ -41,8 +41,24 @@ type Record struct {
 }
 
 func downloadDB(url string, baseDir string) (filename string, err error) {
-	r, err := http.Get(url)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
+		return
+	}
+	req.Header.Set("Accept", "text/plain")
+	r, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return
+	}
+	if r.StatusCode != http.StatusOK {
+		if r.StatusCode == http.StatusTooManyRequests {
+			if retryAfter := r.Header.Get("Retry-After"); retryAfter != "" {
+				err = fmt.Errorf("Failed to download %s: Too many requests, retry after %s", url, retryAfter)
+			} else {
+				err = fmt.Errorf("Failed to download %s: Too many requests, please try again later", url)
+			}
+		}
+		err = fmt.Errorf("Failed to download %s: %s", url, r.Status)
 		return
 	}
 	filePath := path.Join(baseDir, path.Base(url))
