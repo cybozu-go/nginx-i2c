@@ -53,12 +53,12 @@ func downloadDB(url string, baseDir string) (filename string, err error) {
 	if r.StatusCode != http.StatusOK {
 		if r.StatusCode == http.StatusTooManyRequests {
 			if retryAfter := r.Header.Get("Retry-After"); retryAfter != "" {
-				err = fmt.Errorf("Failed to download %s: Too many requests, retry after %s", url, retryAfter)
+				err = fmt.Errorf("failed to download %s: Too many requests, retry after %s", url, retryAfter) //nolint:ineffassign
 			} else {
-				err = fmt.Errorf("Failed to download %s: Too many requests, please try again later", url)
+				err = fmt.Errorf("failed to download %s: Too many requests, please try again later", url) //nolint:ineffassign
 			}
 		}
-		err = fmt.Errorf("Failed to download %s: %s", url, r.Status)
+		err = fmt.Errorf("failed to download %s: %s", url, r.Status) //nolint:ineffassign
 		return
 	}
 	filePath := path.Join(baseDir, path.Base(url))
@@ -66,7 +66,7 @@ func downloadDB(url string, baseDir string) (filename string, err error) {
 	if err != nil {
 		return
 	}
-	defer out.Close()
+	defer out.Close() //nolint:errcheck
 	_, err = io.Copy(out, r.Body)
 	if err != nil {
 		return
@@ -82,12 +82,12 @@ func extractMaxMindDB(filePath string, baseDir string) (filename string, err err
 	if err != nil {
 		return
 	}
-	defer tgz.Close()
+	defer tgz.Close() //nolint:errcheck
 	gz, err := gzip.NewReader(tgz)
 	if err != nil {
 		return
 	}
-	defer gz.Close()
+	defer gz.Close() //nolint:errcheck
 	tr := tar.NewReader(gz)
 	for {
 		header, e := tr.Next()
@@ -110,14 +110,14 @@ func extractMaxMindDB(filePath string, baseDir string) (filename string, err err
 			err = e
 			return
 		}
-		defer out.Close()
+		defer out.Close() //nolint:errcheck
 		n, e := io.Copy(out, tr)
 		if e != nil {
 			err = e
 			return
 		}
 		if n != fInfo.Size() {
-			err = fmt.Errorf("File size is %d but wrote %d", fInfo.Size(), n)
+			err = fmt.Errorf("file size is %d but wrote %d", fInfo.Size(), n)
 			return
 		}
 		log.Printf("Extracted %s", mmdbFilename)
@@ -125,7 +125,7 @@ func extractMaxMindDB(filePath string, baseDir string) (filename string, err err
 		return
 	}
 	if mmdbFilename == "" {
-		err = errors.New("Could not find .mmdb file in archive")
+		err = errors.New("could not find .mmdb file in archive")
 	}
 	return
 }
@@ -176,12 +176,12 @@ func moveFile(srcPath, destPath string) (err error) {
 	if err != nil {
 		return
 	}
-	defer inFile.Close()
+	defer inFile.Close() //nolint:errcheck
 	outFile, err := os.Create(destPath)
 	if err != nil {
 		return
 	}
-	defer outFile.Close()
+	defer outFile.Close() //nolint:errcheck
 	_, err = io.Copy(outFile, inFile)
 	if err != nil {
 		return
@@ -200,7 +200,7 @@ func WriteI2C(entries map[string]string, outfile, tmpDir string) (err error) {
 	}
 	subnets := getSortedSubnets(entries)
 	for _, subnet := range subnets {
-		_, e := tmpFile.WriteString(fmt.Sprintf("%s %s;\n", subnet, entries[subnet]))
+		_, e := fmt.Fprintf(tmpFile, "%s %s;\n", subnet, entries[subnet])
 		if e != nil {
 			err = e
 			return

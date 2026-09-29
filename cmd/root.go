@@ -64,7 +64,7 @@ func rootMain(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer os.RemoveAll(workDir)
+	defer os.RemoveAll(workDir) //nolint:errcheck
 	log.Printf("Created temporary directory %s", workDir)
 	mmdbFilename, err := i2c.GetMMDBFile(workDir, maxMindLicense)
 	if err != nil {
@@ -74,7 +74,7 @@ func rootMain(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer mmdb.Close()
+	defer mmdb.Close() //nolint:errcheck
 
 	entries := map[string]string{}
 	includes := i2c.CountrySliceToMap(includeCountries)

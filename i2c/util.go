@@ -190,7 +190,7 @@ func AppendAllRIRSubnets(mmdb *maxminddb.Reader, entries map[string]string, rirF
 		if e != nil {
 			return e
 		}
-		defer csvFile.Close()
+		defer csvFile.Close() //nolint:errcheck
 		reader := csv.NewReader(bufio.NewReader(csvFile))
 		reader.Comma = '|'
 		reader.Comment = '#'
